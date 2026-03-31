@@ -1,0 +1,180 @@
+# DB設計書
+
+## ER図
+
+```mermaid
+erDiagram
+    AspNetUsers ||--|| CharacterStats : "1対1"
+    AspNetUsers ||--|| UnallocatedPoints : "1対1"
+    AspNetUsers ||--o{ Tasks : "1対多"
+    Tasks ||--o{ TaskCompletionLogs : "1対多"
+
+    AspNetUsers {
+        string Id PK
+        string DisplayName
+        string Email
+        string PasswordHash
+    }
+
+    Tasks {
+        int TaskId PK
+        string UserId FK
+        int Category "0=運動 1=勉強 2=家事"
+        string TaskName
+        date LastCompletedDate
+        datetime CreatedAt
+        datetime UpdatedAt
+    }
+
+    TaskCompletionLogs {
+        bigint LogId PK
+        string UserId FK
+        int TaskId FK
+        int Category "0=運動 1=勉強 2=家事"
+        date CompletedDate
+        datetime CreatedAt
+    }
+
+    CharacterStats {
+        int CharacterStatId PK
+        string UserId FK
+        int HP
+        int MP
+        int ATK
+        int DEF
+        int SPD
+        int MATK
+        datetime UpdatedAt
+    }
+
+    UnallocatedPoints {
+        int PointId PK
+        string UserId FK
+        int ExercisePoints
+        int StudyPoints
+        int HouseworkPoints
+        datetime UpdatedAt
+    }
+```
+
+---
+
+## テーブル定義
+
+### AspNetUsers（ASP.NET Core Identity 拡張）
+
+ASP.NET Core Identity が管理する標準テーブルを拡張する。
+メールアドレス・パスワードハッシュ等の認証情報は Identity が自動管理するため、下記は追加カラムのみ記載する。
+
+| カラム名     | 型            | 制約                              | 説明                       |
+| ------------ | ------------- | --------------------------------- | -------------------------- |
+| Id           | NVARCHAR(450) | PK（Identity 標準）               | ユーザーID（GUID）         |
+| DisplayName  | NVARCHAR(32)  | NOT NULL                          | アプリ内表示名             |
+| Email        | NVARCHAR(256) | NOT NULL, UNIQUE（Identity 標準） | メールアドレス             |
+| PasswordHash | NVARCHAR(MAX) | （Identity 標準）                 | パスワードハッシュ         |
+| ...          | ...           | ...                               | その他 Identity 標準カラム |
+
+---
+
+### Tasks（タスクテーブル）
+
+ユーザーが登録する習慣タスクを管理する。
+1ユーザーにつきカテゴリごとに1件のみ登録可能（UNIQUE制約）。
+
+| カラム名          | 型            | 制約                          | 説明                                                                            |
+| ----------------- | ------------- | ----------------------------- | ------------------------------------------------------------------------------- |
+| TaskId            | INT           | PK, AUTO_INCREMENT            | タスクID                                                                        |
+| UserId            | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID                                                                      |
+| Category          | TINYINT       | NOT NULL                      | カテゴリ（0=運動 / 1=勉強 / 2=家事）                                            |
+| TaskName          | NVARCHAR(100) | NOT NULL                      | タスク名                                                                        |
+| LastCompletedDate | DATE          | NULL                          | 最後に完了した日付。当日日付と一致する場合「完了済み」と判定する。NULL は未完了 |
+| CreatedAt         | DATETIME      | NOT NULL                      | 作成日時                                                                        |
+| UpdatedAt         | DATETIME      | NOT NULL                      | 更新日時                                                                        |
+
+**インデックス・制約**
+
+- UNIQUE (UserId, Category) ：1ユーザーにつき同一カテゴリのタスクは1件のみ
+
+> **タスクリセットの実現方法**
+> 日付変わりのリセット処理はバックグラウンドジョブではなく、クエリ時に `LastCompletedDate < 本日` であれば「未完了」と判定する方式とする。
+> 更新コストがなく、シンプルに実現できる。
+
+---
+
+### TaskCompletionLogs（タスク完了履歴テーブル）
+
+タスクを完了した履歴を蓄積する。
+GitHubの草のような「完了履歴の可視化」に使用する。
+
+| カラム名      | 型            | 制約                          | 説明                                                  |
+| ------------- | ------------- | ----------------------------- | ----------------------------------------------------- |
+| LogId         | BIGINT        | PK, AUTO_INCREMENT            | ログID                                                |
+| UserId        | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID（集計クエリ用に冗長持ち）                  |
+| TaskId        | INT           | FK → Tasks.TaskId, NOT NULL   | タスクID                                              |
+| Category      | TINYINT       | NOT NULL                      | カテゴリ（非正規化。集計を高速化するため）            |
+| CompletedDate | DATE          | NOT NULL                      | 完了日（タイムゾーンはサーバー側でJSTに変換して保存） |
+| CreatedAt     | DATETIME      | NOT NULL                      | レコード作成日時                                      |
+
+**インデックス・制約**
+
+- UNIQUE (TaskId, CompletedDate) ：同一タスクの同日完了は1件のみ
+- INDEX (UserId, CompletedDate) ：草表示の集計クエリ用
+
+---
+
+### CharacterStats（キャラクターステータステーブル）
+
+ユーザーのキャラクターステータスを管理する。
+ユーザーと1対1の関係。ユーザー登録時に初期値で1件作成する。
+
+| カラム名        | 型            | 制約                                  | 説明                                                             |
+| --------------- | ------------- | ------------------------------------- | ---------------------------------------------------------------- |
+| CharacterStatId | INT           | PK, AUTO_INCREMENT                    | ステータスID                                                     |
+| UserId          | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL, UNIQUE | ユーザーID                                                       |
+| HP              | INT           | NOT NULL, DEFAULT 10                  | HP（運動ポイントで上昇可）                                       |
+| MP              | INT           | NOT NULL, DEFAULT 10                  | MP（勉強ポイントで上昇可）                                       |
+| ATK             | INT           | NOT NULL, DEFAULT 10                  | 攻撃力（運動ポイントで上昇可）                                   |
+| DEF             | INT           | NOT NULL, DEFAULT 10                  | 防御力（家事ポイントで上昇可）                                   |
+| SPD             | INT           | NOT NULL, DEFAULT 10                  | 速度（家事ポイントで上昇可）                                     |
+| MATK            | INT           | NOT NULL, DEFAULT 10                  | 魔法攻撃力（勉強ポイントで上昇可）※INTは予約語のため MATK とする |
+| UpdatedAt       | DATETIME      | NOT NULL                              | 更新日時                                                         |
+
+---
+
+### UnallocatedPoints（未振り分けポイントテーブル）
+
+タスク完了で獲得したが、まだステータスに振り分けていないポイントを管理する。
+ユーザーと1対1の関係。ユーザー登録時に初期値(0)で1件作成する。
+
+| カラム名        | 型            | 制約                                  | 説明                                                       |
+| --------------- | ------------- | ------------------------------------- | ---------------------------------------------------------- |
+| PointId         | INT           | PK, AUTO_INCREMENT                    | ポイントID                                                 |
+| UserId          | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL, UNIQUE | ユーザーID                                                 |
+| ExercisePoints  | INT           | NOT NULL, DEFAULT 0                   | 運動カテゴリの未振り分けポイント（HP / ATK に振り分け可）  |
+| StudyPoints     | INT           | NOT NULL, DEFAULT 0                   | 勉強カテゴリの未振り分けポイント（MP / MATK に振り分け可） |
+| HouseworkPoints | INT           | NOT NULL, DEFAULT 0                   | 家事カテゴリの未振り分けポイント（DEF / SPD に振り分け可） |
+| UpdatedAt       | DATETIME      | NOT NULL                              | 更新日時                                                   |
+
+---
+
+## ステータスポイントの振り分けルール
+
+| カテゴリ | 振り分け可能なステータス |
+| -------- | ------------------------ |
+| 運動     | HP、ATK                  |
+| 勉強     | MP、MATK                 |
+| 家事     | DEF、SPD                 |
+
+- タスク完了ごとに該当カテゴリの `UnallocatedPoints` が **+3** される
+- ユーザーが任意のタイミングでポイントを消費し、対応するステータスを上昇させる
+- 1ポイント消費 = 対象ステータス +1
+
+---
+
+## ユーザー登録時の初期データ作成
+
+ユーザー登録完了時に、以下のレコードをトランザクション内で一括作成する。
+
+1. `Tasks` × 3件（運動 / 勉強 / 家事）
+2. `CharacterStats` × 1件（全ステータス初期値 10）
+3. `UnallocatedPoints` × 1件（全ポイント 0）
