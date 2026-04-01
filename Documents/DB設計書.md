@@ -14,6 +14,7 @@ erDiagram
         string DisplayName
         string Email
         string PasswordHash
+        bool IsInit
     }
 
     Tasks {
@@ -69,9 +70,10 @@ ASP.NET Core Identity が管理する標準テーブルを拡張する。
 | カラム名     | 型            | 制約                              | 説明                       |
 | ------------ | ------------- | --------------------------------- | -------------------------- |
 | Id           | NVARCHAR(450) | PK（Identity 標準）               | ユーザーID（GUID）         |
-| DisplayName  | NVARCHAR(32)  | NOT NULL                          | アプリ内表示名             |
+| DisplayName  | NVARCHAR(32)  | NOT NULL, DEFAULT ''              | アプリ内表示名。ユーザー登録時は空文字で作成し、SCR007で更新する |
 | Email        | NVARCHAR(256) | NOT NULL, UNIQUE（Identity 標準） | メールアドレス             |
 | PasswordHash | NVARCHAR(MAX) | （Identity 標準）                 | パスワードハッシュ         |
+| IsInit       | BIT           | NOT NULL, DEFAULT 0               | 初期設定完了フラグ。SCR007での設定完了時に1へ更新する |
 | ...          | ...           | ...                               | その他 Identity 標準カラム |
 
 ---
@@ -86,7 +88,7 @@ ASP.NET Core Identity が管理する標準テーブルを拡張する。
 | TaskId            | INT           | PK, AUTO_INCREMENT            | タスクID                                                                        |
 | UserId            | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID                                                                      |
 | Category          | TINYINT       | NOT NULL                      | カテゴリ（0=運動 / 1=勉強 / 2=家事）                                            |
-| TaskName          | NVARCHAR(100) | NOT NULL                      | タスク名                                                                        |
+| TaskName          | NVARCHAR(100) | NOT NULL, DEFAULT ''          | タスク名。ユーザー登録時は空文字で作成し、SCR007で更新する                      |
 | LastCompletedDate | DATE          | NULL                          | 最後に完了した日付。当日日付と一致する場合「完了済み」と判定する。NULL は未完了 |
 | CreatedAt         | DATETIME      | NOT NULL                      | 作成日時                                                                        |
 | UpdatedAt         | DATETIME      | NOT NULL                      | 更新日時                                                                        |
@@ -175,6 +177,8 @@ GitHubの草のような「完了履歴の可視化」に使用する。
 
 ユーザー登録完了時に、以下のレコードをトランザクション内で一括作成する。
 
-1. `Tasks` × 3件（運動 / 勉強 / 家事）
+1. `Tasks` × 3件（運動 / 勉強 / 家事）。TaskName は空文字（`""`）で作成し、SCR007（初期設定入力画面）で更新する
 2. `CharacterStats` × 1件（全ステータス初期値 10）
 3. `UnallocatedPoints` × 1件（全ポイント 0）
+
+> AspNetUsers.IsInit は登録時 `0`（false）で作成し、SCR007 での設定完了時に `1`（true）へ更新する。
