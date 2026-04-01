@@ -34,8 +34,7 @@
 
 ### 3.2 画面イメージ
 
-- ワイヤーフレーム貼付欄
-- モックアップ貼付欄
+![再設定リクエスト完了画面](images/scr005-password-reset-request-complete.png)
 
 ---
 
