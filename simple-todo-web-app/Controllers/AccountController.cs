@@ -10,6 +10,12 @@ namespace simple_todo_web_app.Controllers
 		{
 			return View("Login");
 		}
+		
+		[HttpGet("/account/register-confirmation")]
+		public IActionResult RegisterConfirmation()
+		{
+			return View("RegisterConfirmation");
+		}
 
 		[HttpPost]
 		[ValidateAntiForgeryToken]
