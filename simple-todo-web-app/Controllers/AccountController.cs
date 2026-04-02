@@ -11,10 +11,18 @@ namespace simple_todo_web_app.Controllers
 			return View("Login");
 		}
 		
+
+
 		[HttpGet("/account/register-confirmation")]
 		public IActionResult RegisterConfirmation()
 		{
 			return View("RegisterConfirmation");
+		}
+		
+		[HttpGet("/account/forgot-password-confirmation")]
+		public IActionResult ForgotPasswordConfirmation()
+		{
+			return View("ForgotPasswordConfirmation");
 		}
 
 		[HttpPost]
