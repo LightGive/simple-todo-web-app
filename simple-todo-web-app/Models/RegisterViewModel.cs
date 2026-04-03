@@ -1,5 +1,4 @@
-﻿using simple_todo_web_app.Attributes;
-using simple_todo_web_app.Common;
+﻿using simple_todo_web_app.Common.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace simple_todo_web_app.Models
@@ -11,7 +10,7 @@ namespace simple_todo_web_app.Models
 		public string Email { get; set; } = string.Empty;
 
 		[Required(ErrorMessage = "パスワードを入力してください。")]
-		[MinLength(PasswordPolicy.RequiredLength, ErrorMessage = "パスワードの長さは{1}文字以上にして下さい")]
+		[MinLength(PasswordConstants.RequiredLength, ErrorMessage = "パスワードの長さは{1}文字以上にして下さい")]
 		[RegularExpression(@"^(?=.*[a-z])(?=.*\d).*$",ErrorMessage = "パスワードは英小文字と数字をそれぞれ1文字以上含めてください")]
 		public string Password { get; set; } = string.Empty;
 
