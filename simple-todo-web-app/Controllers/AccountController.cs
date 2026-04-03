@@ -142,10 +142,24 @@ namespace simple_todo_web_app.Controllers
 
 			if (!result.Succeeded)
 			{
+				var errorMessage = string.Empty;
 				foreach (var error in result.Errors)
 				{
-					
-					ModelState.AddModelError(string.Empty, error.Description);
+					switch (error.Code)
+					{
+						case "DuplicateEmail":
+						case "DuplicateUserName":
+							errorMessage = "このメールアドレスは既に使用されています。";
+							break;
+						case "InvalidUserName":
+							errorMessage = "ユーザー名に使用できない文字が含まれています。";
+							break;
+						default:
+							errorMessage = "ユーザー登録中にエラーが発生しました。\nしばらく経ってから再度お試しください。";
+							break;
+					}
+
+					ModelState.AddModelError(string.Empty, errorMessage);
 				}
 				return View(model);
 			}
