@@ -25,6 +25,15 @@ builder.Services.AddDefaultIdentity<ApplicationUser>(options =>
 
 }).AddEntityFrameworkStores<ApplicationDbContext>();
 
+builder.Services.ConfigureApplicationCookie(options => 
+{
+	options.LoginPath = "/account/login";
+	// 認証の有効期限を14日に設定
+	options.ExpireTimeSpan = TimeSpan.FromDays(14);
+	// アクセスの度に有効期限を更新する
+	options.SlidingExpiration = true;
+});
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
@@ -44,6 +53,7 @@ else
 app.UseHttpsRedirection();
 app.UseRouting();
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapStaticAssets();
