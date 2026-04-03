@@ -17,11 +17,11 @@ builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 	options.SignIn.RequireConfirmedAccount = true;
 
 	// パスワード規則
-	options.Password.RequiredLength = PasswordPolicy.RequiredLength;
-	options.Password.RequireDigit = PasswordPolicy.RequireDigit;
-	options.Password.RequireLowercase = PasswordPolicy.RequireLowercase;
-	options.Password.RequireUppercase = PasswordPolicy.RequireUppercase;
-	options.Password.RequireNonAlphanumeric = PasswordPolicy.RequireNonAlphanumeric;
+	options.Password.RequiredLength = PasswordConstants.RequiredLength;
+	options.Password.RequireDigit = PasswordConstants.RequireDigit;
+	options.Password.RequireLowercase = PasswordConstants.RequireLowercase;
+	options.Password.RequireUppercase = PasswordConstants.RequireUppercase;
+	options.Password.RequireNonAlphanumeric = PasswordConstants.RequireNonAlphanumeric;
 
 }).AddEntityFrameworkStores<ApplicationDbContext>();
 

@@ -1,6 +1,6 @@
-﻿namespace simple_todo_web_app.Common
+﻿namespace simple_todo_web_app.Common.Constants
 {
-	public static class PasswordPolicy
+	public static class PasswordConstants
 	{
 		public const int RequiredLength = 8;
 		public const bool RequireDigit = true;
