@@ -1,5 +1,4 @@
-﻿using simple_todo_web_app.Attributes;
-using simple_todo_web_app.Common.Constants;
+﻿using simple_todo_web_app.Common.Constants;
 using System.ComponentModel.DataAnnotations;
 
 namespace simple_todo_web_app.Models

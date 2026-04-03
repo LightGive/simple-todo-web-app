@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using simple_todo_web_app.Common;
+using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Data;
 
 var builder = WebApplication.CreateBuilder(args);
