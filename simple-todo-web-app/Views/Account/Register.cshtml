@@ -1,22 +1,22 @@
-﻿@model simple_todo_web_app.Models.LoginViewModel
+﻿@model simple_todo_web_app.Models.RegisterViewModel
 @{
-    ViewData["Title"] = "ログイン";
+    ViewData["Title"] = "新規ユーザー登録";
 }
 
 <div class="text-center mt-5">
-    <h1>ログイン</h1>
+    <h1>新規ユーザー登録</h1>
     <form method="post"
-          asp-action="Login"
+          asp-action="Register"
           asp-controller="Account"
           class="container mt-5">
 
         <!-- メールアドレス入力フォーム -->
         <div class="row mb-2">
-            <label for="login-email-address" class="col form-label">
+            <label for="register-email-address" class="col form-label">
                 メールアドレス
             </label>
             <input type="email"
-                   id="login-email-address"
+                   id="register-email-address"
                    asp-for="Email"
                    class="form-control col"
                    placeholder="xxx@example.jp" />
@@ -24,12 +24,23 @@
 
         <!-- パスワード入力フォーム -->
         <div class="row mb-2">
-            <label for="login-password" class="col form-label">
+            <label for="register-password" class="col form-label">
                 パスワード
             </label>
             <input type="password"
-                   id="login-password"
+                   id="register-password"
                    asp-for="Password"
+                   class="col form-control" />
+        </div>
+
+        <!-- 確認パスワード入力フォーム -->
+        <div class="row mb-2">
+            <label for="register-confirm-password" class="col form-label">
+                パスワード（確認）
+            </label>
+            <input type="password"
+                   id="register-confirm-password"
+                   asp-for="ConfirmPassword"
                    class="col form-control" />
         </div>
 
@@ -49,15 +60,11 @@
         }
 
         <!-- ログインボタン -->
-        <button type="submit" class="btn btn-primary">ログイン</button>
+        <button type="submit" class="btn btn-primary">登録</button>
 
         <!-- 各リンク -->
         <div class="mt-4">
-            <a href="/account/register" class="link-primary">新規登録はこちら</a>
-
-        </div>
-        <div>
-            <a class="link-primary">パスワードをお忘れの方</a>
+            <a href="/account/login" class="link-primary">ログイン画面に戻る</a>
         </div>
     </form>
 </div>
