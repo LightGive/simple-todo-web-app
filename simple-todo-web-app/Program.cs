@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using simple_todo_web_app.Common;
 using simple_todo_web_app.Data;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -10,8 +11,20 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 	options.UseSqlServer(connectionString));
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-builder.Services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
-	.AddEntityFrameworkStores<ApplicationDbContext>();
+builder.Services.AddDefaultIdentity<IdentityUser>(options =>
+{
+	// メール認証が必要
+	options.SignIn.RequireConfirmedAccount = true;
+
+	// パスワード規則
+	options.Password.RequiredLength = PasswordPolicy.RequiredLength;
+	options.Password.RequireDigit = PasswordPolicy.RequireDigit;
+	options.Password.RequireLowercase = PasswordPolicy.RequireLowercase;
+	options.Password.RequireUppercase = PasswordPolicy.RequireUppercase;
+	options.Password.RequireNonAlphanumeric = PasswordPolicy.RequireNonAlphanumeric;
+
+}).AddEntityFrameworkStores<ApplicationDbContext>();
+
 builder.Services.AddControllersWithViews();
 
 var app = builder.Build();
