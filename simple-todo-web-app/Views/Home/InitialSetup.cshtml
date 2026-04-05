@@ -1,0 +1,70 @@
+﻿@model simple_todo_web_app.Models.InitialSetupViewModel
+@{
+    ViewData["Title"] = "初期設定";
+}
+
+<div class="text-center">
+    <h1>初期設定</h1>
+    <div class="mt-4">各項目を入力して「次へ」を押してください</div>
+
+    <div class="text-center mt-4">
+        <form method="post"
+              asp-action="InitialSetup"
+              asp-controller="Home"
+              class="container">
+
+            <!-- 名前 -->
+            <div class="row mb-1">
+                <label for="name" class="col form-label">
+                    勇者の名前（※他者から見えます）
+                </label>
+                <input type="text"
+                       id="input-display-name"
+                       asp-for="DisplayName"
+                       class="form-control col"
+                       placeholder="例：勇者ハビット" />
+            </div>
+
+            <!-- タスク -->
+            <div class="row mb-1">
+                <label for="task1" class="col form-label">
+                    運動タスク
+                </label>
+                <input type="text"
+                       id="task1"
+                       asp-for="TaskNameExercise"
+                       class="form-control col"
+                       placeholder="例：腕立て伏せ10回" />
+            </div>
+
+            <div class="row mb-1">
+                <label for="task2" class="col form-label">
+                    勉強タスク
+                </label>
+                <input type="text"
+                       id="task2"
+                       asp-for="TaskNameStudy"
+                       class="form-control col"
+                       placeholder="例：10分間本を読む" />
+            </div>
+            <div class="row mb-1">
+                <label for="task3" class="col form-label">
+                    家事タスク
+                </label>
+                <input type="text"
+                       id="task3"
+                       asp-for="TaskNameHousework"
+                       class="form-control col"
+                       placeholder="例：机の上を掃除" />
+            </div>
+
+            <!-- 決定ボタン -->
+            <button 
+                type="submit" 
+                class="btn btn-primary mt-4">
+                次へ
+            </button>
+
+        </form>
+    </div>
+</div>
