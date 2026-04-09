@@ -3,5 +3,6 @@
 	public static class CharacterConstants
 	{
 		public const int NameMaxLength = 32;
+		public const int InitialStatValue = 10;
 	}
 }
