@@ -30,7 +30,7 @@ erDiagram
         bigint LogId PK
         string UserId FK
         int TaskId FK
-        datetime CompletedAt
+        date CompletedAt
     }
 
     CharacterStats {
@@ -104,12 +104,12 @@ ASP.NET Core Identity が管理する標準テーブルを拡張する。
 GitHubの草のような「完了履歴の可視化」に使用する。
 カテゴリは TaskId を通じて Tasks テーブルから取得する。
 
-| カラム名    | 型            | 制約                          | 説明                                   |
-| ----------- | ------------- | ----------------------------- | -------------------------------------- |
-| LogId       | BIGINT        | PK, AUTO_INCREMENT            | ログID                                 |
-| UserId      | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID（集計クエリ用に冗長持ち）   |
-| TaskId      | INT           | FK → Tasks.TaskId, NOT NULL   | タスクID                               |
-| CompletedAt | DATETIME      | NOT NULL                      | 完了日時（UTC）。表示時にJSTへ変換する |
+| カラム名    | 型            | 制約                          | 説明                                 |
+| ----------- | ------------- | ----------------------------- | ------------------------------------ |
+| LogId       | BIGINT        | PK, AUTO_INCREMENT            | ログID                               |
+| UserId      | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID（集計クエリ用に冗長持ち） |
+| TaskId      | INT           | FK → Tasks.TaskId, NOT NULL   | タスクID                             |
+| CompletedAt | DATE          | NOT NULL                      | 完了日（JST）                        |
 
 **インデックス・制約**
 
