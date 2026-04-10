@@ -114,7 +114,7 @@
 
 - タスクの完了判定：`Tasks.LastCompletedDate` が本日の日付と一致する場合に「完了済み」とする
 - 日付が変わると自動的にタスクが「未完了」に戻る（クエリ時に判定、DBの更新は不要）
-- タスク完了時：対応カテゴリの `UnallocatedPoints` を +3 する
+- タスク完了時：対応カテゴリの `UnallocatedPoints` を +1 する
 - 同一タスクを同日中に2回完了することはできない
 - ステータスポイントの振り分け：1ポイント消費で対象ステータス +1
 - 振り分け可能なステータスはカテゴリ別に制限（運動→HP/ATK、勉強→MP/MATK、家事→DEF/SPD）
@@ -156,7 +156,7 @@
 | No  | 処理名             | API/処理概要                                                     | HTTPメソッド | エンドポイント               | 備考                                                                                                         |
 | --- | ------------------ | ---------------------------------------------------------------- | ------------ | ---------------------------- | ------------------------------------------------------------------------------------------------------------ |
 | 1   | ホーム情報取得     | タスク一覧、キャラクターステータス、未振り分けポイント、レベルを取得する | GET          | /home                        | ページ初期表示時。レベルはTaskCompletionLogsのCOUNT(UserId = ログインユーザー)で算出する |
-| 2   | タスク完了         | 指定タスクを完了状態にし、対応ポイントを+3する                   | POST         | /api/tasks/{taskId}/complete | LastCompletedDateを本日の日付に更新、UnallocatedPointsを+3、TaskCompletionLogsにレコードを登録（INSERT）する |
+| 2   | タスク完了         | 指定タスクを完了状態にし、対応ポイントを+1する                   | POST         | /api/tasks/{taskId}/complete | LastCompletedDateを本日の日付に更新、UnallocatedPointsを+1、TaskCompletionLogsにレコードを登録（INSERT）する |
 | 3   | ポイント振り分け   | 指定ポイントをステータスに振り分ける                             | POST         | /api/character/allocate      | UnallocatedPointsを減算、CharacterStatsを加算                                                                |
 | 4   | タスク完了履歴取得 | 過去の完了履歴データを取得する                                   | GET          | /api/tasks/history           | TaskCompletionLogsを集計して返す                                                                             |
 | 5   | ログアウト         | セッション・Cookieを無効化する                                   | POST         | /account/logout              | ASP.NET Core Identityの標準処理                                                                              |

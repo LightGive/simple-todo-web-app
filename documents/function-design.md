@@ -238,16 +238,16 @@ ASP.NET Core Identity のパスワードリセット処理を実行する。
 タスクボタン押下時に POST リクエストを送信し、以下を実行する。
 
 - `Tasks.LastCompletedDate` を本日の日付に更新する
-- 対応カテゴリの `UnallocatedPoints` を +3 する
+- 対応カテゴリの `UnallocatedPoints` を +1 する
 - `TaskCompletionLogs` にレコードを INSERT する
 
 同一タスクの同日重複完了は不可（`TaskCompletionLogs` の UNIQUE 制約により防止）。
 
 | タスクカテゴリ | 付与されるポイント |
 | -------------- | ------------------ |
-| 運動（0）      | ExercisePoints +3  |
-| 勉強（1）      | StudyPoints +3     |
-| 家事（2）      | HouseworkPoints +3 |
+| 運動（0）      | ExercisePoints +1  |
+| 勉強（1）      | StudyPoints +1     |
+| 家事（2）      | HouseworkPoints +1 |
 
 ### 必要なデータ
 
