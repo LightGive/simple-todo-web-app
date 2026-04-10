@@ -23,17 +23,14 @@ erDiagram
         int Category "0=運動 1=勉強 2=家事"
         string TaskName
         date LastCompletedDate
-        datetime CreatedAt
-        datetime UpdatedAt
+        bool IsDeleted
     }
 
     TaskCompletionLogs {
         bigint LogId PK
         string UserId FK
         int TaskId FK
-        int Category "0=運動 1=勉強 2=家事"
-        date CompletedDate
-        datetime CreatedAt
+        date CompletedAt
     }
 
     CharacterStats {
@@ -45,7 +42,6 @@ erDiagram
         int DEF
         int SPD
         int MATK
-        datetime UpdatedAt
     }
 
     UnallocatedPoints {
@@ -54,7 +50,6 @@ erDiagram
         int ExercisePoints
         int StudyPoints
         int HouseworkPoints
-        datetime UpdatedAt
     }
 ```
 
@@ -67,21 +62,22 @@ erDiagram
 ASP.NET Core Identity が管理する標準テーブルを拡張する。
 メールアドレス・パスワードハッシュ等の認証情報は Identity が自動管理するため、下記は追加カラムのみ記載する。
 
-| カラム名     | 型            | 制約                              | 説明                       |
-| ------------ | ------------- | --------------------------------- | -------------------------- |
-| Id           | NVARCHAR(450) | PK（Identity 標準）               | ユーザーID（GUID）         |
+| カラム名     | 型            | 制約                              | 説明                                                             |
+| ------------ | ------------- | --------------------------------- | ---------------------------------------------------------------- |
+| Id           | NVARCHAR(450) | PK（Identity 標準）               | ユーザーID（GUID）                                               |
 | DisplayName  | NVARCHAR(32)  | NOT NULL, DEFAULT ''              | アプリ内表示名。ユーザー登録時は空文字で作成し、SCR007で更新する |
-| Email        | NVARCHAR(256) | NOT NULL, UNIQUE（Identity 標準） | メールアドレス             |
-| PasswordHash | NVARCHAR(MAX) | （Identity 標準）                 | パスワードハッシュ         |
-| IsInit       | BIT           | NOT NULL, DEFAULT 0               | 初期設定完了フラグ。SCR007での設定完了時に1へ更新する |
-| ...          | ...           | ...                               | その他 Identity 標準カラム |
+| Email        | NVARCHAR(256) | NOT NULL, UNIQUE（Identity 標準） | メールアドレス                                                   |
+| PasswordHash | NVARCHAR(MAX) | （Identity 標準）                 | パスワードハッシュ                                               |
+| IsInit       | BIT           | NOT NULL, DEFAULT 0               | 初期設定完了フラグ。SCR007での設定完了時に1へ更新する            |
+| ...          | ...           | ...                               | その他 Identity 標準カラム                                       |
 
 ---
 
 ### Tasks（タスクテーブル）
 
 ユーザーが登録する習慣タスクを管理する。
-1ユーザーにつきカテゴリごとに1件のみ登録可能（UNIQUE制約）。
+1ユーザーにつきカテゴリごとに1件のみ登録可能とするか検討中（仕様未確定）。
+削除は論理削除とし、IsDeleted フラグで管理する。
 
 | カラム名          | 型            | 制約                          | 説明                                                                            |
 | ----------------- | ------------- | ----------------------------- | ------------------------------------------------------------------------------- |
@@ -90,12 +86,11 @@ ASP.NET Core Identity が管理する標準テーブルを拡張する。
 | Category          | TINYINT       | NOT NULL                      | カテゴリ（0=運動 / 1=勉強 / 2=家事）                                            |
 | TaskName          | NVARCHAR(100) | NOT NULL, DEFAULT ''          | タスク名。ユーザー登録時は空文字で作成し、SCR007で更新する                      |
 | LastCompletedDate | DATE          | NULL                          | 最後に完了した日付。当日日付と一致する場合「完了済み」と判定する。NULL は未完了 |
-| CreatedAt         | DATETIME      | NOT NULL                      | 作成日時                                                                        |
-| UpdatedAt         | DATETIME      | NOT NULL                      | 更新日時                                                                        |
+| IsDeleted         | BIT           | NOT NULL, DEFAULT 0           | 論理削除フラグ                                                                  |
 
 **インデックス・制約**
 
-- UNIQUE (UserId, Category) ：1ユーザーにつき同一カテゴリのタスクは1件のみ
+- UNIQUE (UserId, Category) ：1ユーザーにつき同一カテゴリのタスクは1件のみ（※仕様未確定）
 
 > **タスクリセットの実現方法**
 > 日付変わりのリセット処理はバックグラウンドジョブではなく、クエリ時に `LastCompletedDate < 本日` であれば「未完了」と判定する方式とする。
@@ -107,20 +102,19 @@ ASP.NET Core Identity が管理する標準テーブルを拡張する。
 
 タスクを完了した履歴を蓄積する。
 GitHubの草のような「完了履歴の可視化」に使用する。
+カテゴリは TaskId を通じて Tasks テーブルから取得する。
 
-| カラム名      | 型            | 制約                          | 説明                                                  |
-| ------------- | ------------- | ----------------------------- | ----------------------------------------------------- |
-| LogId         | BIGINT        | PK, AUTO_INCREMENT            | ログID                                                |
-| UserId        | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID（集計クエリ用に冗長持ち）                  |
-| TaskId        | INT           | FK → Tasks.TaskId, NOT NULL   | タスクID                                              |
-| Category      | TINYINT       | NOT NULL                      | カテゴリ（非正規化。集計を高速化するため）            |
-| CompletedDate | DATE          | NOT NULL                      | 完了日（タイムゾーンはサーバー側でJSTに変換して保存） |
-| CreatedAt     | DATETIME      | NOT NULL                      | レコード作成日時                                      |
+| カラム名    | 型            | 制約                          | 説明                                 |
+| ----------- | ------------- | ----------------------------- | ------------------------------------ |
+| LogId       | BIGINT        | PK, AUTO_INCREMENT            | ログID                               |
+| UserId      | NVARCHAR(450) | FK → AspNetUsers.Id, NOT NULL | ユーザーID（集計クエリ用に冗長持ち） |
+| TaskId      | INT           | FK → Tasks.TaskId, NOT NULL   | タスクID                             |
+| CompletedAt | DATE          | NOT NULL                      | 完了日（JST）                        |
 
 **インデックス・制約**
 
-- UNIQUE (TaskId, CompletedDate) ：同一タスクの同日完了は1件のみ
-- INDEX (UserId, CompletedDate) ：草表示の集計クエリ用
+- UNIQUE (TaskId, CompletedAt) ：同一タスクの同日完了は1件のみ
+- INDEX (UserId, CompletedAt) ：草表示の集計クエリ用
 
 ---
 
@@ -139,7 +133,6 @@ GitHubの草のような「完了履歴の可視化」に使用する。
 | DEF             | INT           | NOT NULL, DEFAULT 10                  | 防御力（家事ポイントで上昇可）                                   |
 | SPD             | INT           | NOT NULL, DEFAULT 10                  | 速度（家事ポイントで上昇可）                                     |
 | MATK            | INT           | NOT NULL, DEFAULT 10                  | 魔法攻撃力（勉強ポイントで上昇可）※INTは予約語のため MATK とする |
-| UpdatedAt       | DATETIME      | NOT NULL                              | 更新日時                                                         |
 
 ---
 
@@ -155,7 +148,6 @@ GitHubの草のような「完了履歴の可視化」に使用する。
 | ExercisePoints  | INT           | NOT NULL, DEFAULT 0                   | 運動カテゴリの未振り分けポイント（HP / ATK に振り分け可）  |
 | StudyPoints     | INT           | NOT NULL, DEFAULT 0                   | 勉強カテゴリの未振り分けポイント（MP / MATK に振り分け可） |
 | HouseworkPoints | INT           | NOT NULL, DEFAULT 0                   | 家事カテゴリの未振り分けポイント（DEF / SPD に振り分け可） |
-| UpdatedAt       | DATETIME      | NOT NULL                              | 更新日時                                                   |
 
 ---
 

@@ -58,9 +58,11 @@ app.UseAuthorization();
 
 app.MapStaticAssets();
 
+app.MapGet("/", () => Results.Redirect("/account/login"));
+
 app.MapControllerRoute(
 	name: "default",
-	pattern: "{controller=Home}/{action=Index}/{id?}")
+	pattern: "{controller=Account}/{action=Login}/{id?}")
 	.WithStaticAssets();
 
 app.MapRazorPages()
