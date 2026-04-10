@@ -3,20 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
-using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using simple_todo_web_app.Data;
 
 #nullable disable
 
-namespace simple_todo_web_app.Data.Migrations
+namespace simple_todo_web_app.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20260403051654_AddDisplayNameToApplicationUser")]
-    partial class AddDisplayNameToApplicationUser
+    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
     {
-        /// <inheritdoc />
-        protected override void BuildTargetModel(ModelBuilder modelBuilder)
+        protected override void BuildModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -186,6 +183,9 @@ namespace simple_todo_web_app.Data.Migrations
                     b.Property<bool>("EmailConfirmed")
                         .HasColumnType("bit");
 
+                    b.Property<bool>("IsInit")
+                        .HasColumnType("bit");
+
                     b.Property<bool>("LockoutEnabled")
                         .HasColumnType("bit");
 
@@ -230,6 +230,134 @@ namespace simple_todo_web_app.Data.Migrations
                         .HasFilter("[NormalizedUserName] IS NOT NULL");
 
                     b.ToTable("AspNetUsers", (string)null);
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.CharacterStats", b =>
+                {
+                    b.Property<int>("CharacterStatId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CharacterStatId"));
+
+                    b.Property<int>("ATK")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DEF")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HP")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MATK")
+                        .HasColumnType("int");
+
+                    b.Property<int>("MP")
+                        .HasColumnType("int");
+
+                    b.Property<int>("SPD")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("CharacterStatId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("CharacterStats");
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.TaskCompletionLog", b =>
+                {
+                    b.Property<long>("LogId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<long>("LogId"));
+
+                    b.Property<DateOnly>("CompletedAt")
+                        .HasColumnType("date");
+
+                    b.Property<int>("TaskId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("LogId");
+
+                    b.HasIndex("TaskId", "CompletedAt")
+                        .IsUnique();
+
+                    b.HasIndex("UserId", "CompletedAt");
+
+                    b.ToTable("TaskCompletionLogs");
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.ToDoTask", b =>
+                {
+                    b.Property<int>("TaskId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("TaskId"));
+
+                    b.Property<int>("Category")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("IsDeleted")
+                        .HasColumnType("bit");
+
+                    b.Property<DateOnly?>("LastCompletedDate")
+                        .HasColumnType("date");
+
+                    b.Property<string>("TaskName")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("TaskId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("Tasks");
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.UnallocatedPoints", b =>
+                {
+                    b.Property<int>("PointId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PointId"));
+
+                    b.Property<int>("ExercisePoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("HouseworkPoints")
+                        .HasColumnType("int");
+
+                    b.Property<int>("StudyPoints")
+                        .HasColumnType("int");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("PointId");
+
+                    b.HasIndex("UserId")
+                        .IsUnique();
+
+                    b.ToTable("UnallocatedPoints");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -281,6 +409,42 @@ namespace simple_todo_web_app.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.CharacterStats", b =>
+                {
+                    b.HasOne("simple_todo_web_app.Models.ApplicationUser", null)
+                        .WithOne("CharacterStats")
+                        .HasForeignKey("simple_todo_web_app.Models.Entities.CharacterStats", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.ToDoTask", b =>
+                {
+                    b.HasOne("simple_todo_web_app.Models.ApplicationUser", null)
+                        .WithMany("TaskList")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.Entities.UnallocatedPoints", b =>
+                {
+                    b.HasOne("simple_todo_web_app.Models.ApplicationUser", null)
+                        .WithOne("UnallocatedPoints")
+                        .HasForeignKey("simple_todo_web_app.Models.Entities.UnallocatedPoints", "UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("simple_todo_web_app.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("CharacterStats");
+
+                    b.Navigation("TaskList");
+
+                    b.Navigation("UnallocatedPoints");
                 });
 #pragma warning restore 612, 618
         }
