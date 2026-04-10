@@ -1,0 +1,13 @@
+﻿
+@await Html.PartialAsync("_ValidationScriptsPartial")
+<script>
+    $(function () {
+        var $container = $('#validation-container');
+        if ($('.validation-summary-errors').length) {
+            $container.show();
+        }
+        $('form').on('invalid-form.validate', function () {
+            $container.show();
+        });
+    });
+</script>

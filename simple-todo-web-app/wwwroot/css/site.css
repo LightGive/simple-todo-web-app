@@ -29,3 +29,9 @@ body {
 .form-floating > .form-control-plaintext:focus::placeholder, .form-floating > .form-control:focus::placeholder {
   text-align: start;
 }
+
+.validation-summary-errors ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
