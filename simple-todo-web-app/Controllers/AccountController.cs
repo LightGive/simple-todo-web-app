@@ -46,7 +46,7 @@ namespace simple_todo_web_app.Controllers
 		/// </summary>
 		/// <param name="model"></param>
 		/// <returns></returns>
-		[HttpPost]
+		[HttpPost("/account/login")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Login(LoginViewModel model)
 		{
@@ -72,6 +72,13 @@ namespace simple_todo_web_app.Controllers
 				true,
 				false);
 
+#if DEBUG
+			Console.WriteLine($"Succeeded: {result.Succeeded}");
+			Console.WriteLine($"IsLockedOut: {result.IsLockedOut}");
+			Console.WriteLine($"IsNotAllowed: {result.IsNotAllowed}");
+			Console.WriteLine($"RequiresTwoFactor: {result.RequiresTwoFactor}");
+#endif
+
 			if (!result.Succeeded)
 			{
 				ModelState.AddModelError(string.Empty, "メールアドレスまたはパスワードが正しくありません。");
@@ -92,18 +99,15 @@ namespace simple_todo_web_app.Controllers
 #if DEBUG
 				Console.WriteLine("サインイン成功、初期化済のためホーム画面へ");
 #endif
-				// TODO: ホーム画面（SCR008）の実装後にリダイレクト先を変更
-				return View(model);
+				return RedirectToAction("Home", "Home");
 			}
 			else
 			{
 #if DEBUG
 				Console.WriteLine("サインイン成功、未初期化のため初期設定画面へ");
 #endif
-				// TODO: 初期設定画面（SCR007）の実装後にリダイレクト先を変更
-				return View(model);
+				return RedirectToAction("InitialSetup", "Home");
 			}
-
 		}
 
 		/// <summary>
@@ -111,7 +115,7 @@ namespace simple_todo_web_app.Controllers
 		/// </summary>
 		/// <param name="model"></param>
 		/// <returns></returns>
-		[HttpPost]
+		[HttpPost("/account/register")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Register(RegisterViewModel model)
 		{

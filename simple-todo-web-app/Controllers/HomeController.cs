@@ -1,31 +1,41 @@
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using simple_todo_web_app.Models;
+using simple_todo_web_app.Models.Enums;
+using simple_todo_web_app.Models.Parameters;
 using System.Diagnostics;
 
 namespace simple_todo_web_app.Controllers
 {
 	public class HomeController : Controller
 	{
-		public IActionResult Index()
+		readonly UserManager<ApplicationUser> _userManager;
+
+		public HomeController(UserManager<ApplicationUser> userManager)
 		{
-			return View();
+			_userManager = userManager;
 		}
 
-		public IActionResult Privacy()
-		{
-			return View();
-		}
-
+		[Authorize]
 		[HttpGet("/home/initial-setup")]
-		public IActionResult InitialSetup()
+		public async Task<IActionResult> InitialSetup()
 		{
-			return View("InitialSetup");
-		}
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+			{
+				// [Authorize] が付与されているため通常はここに到達しない
+				// 念のためエラーハンドリング
+				return RedirectToAction("Login", "Account");
+			}
 
-		[HttpGet("/home/home")]
-		public IActionResult Home()
-		{
-			return View("Index");
+			if (user.IsInit)
+			{
+				// 初期化済みの場合はホーム画面へ遷移
+				return RedirectToAction("Home");
+			}
+
+			return View("InitialSetup");
 		}
 
 		/// <summary>
@@ -33,18 +43,53 @@ namespace simple_todo_web_app.Controllers
 		/// </summary>
 		/// <param name="model"></param>
 		/// <returns></returns>
-		[HttpPost]
+		[Authorize]
+		[HttpPost("/home/initial-setup")]
 		[ValidateAntiForgeryToken]
-		public IActionResult InitialSetup(InitialSetupViewModel model)
+		public async Task<IActionResult> InitialSetup(InitialSetupViewModel model)
 		{
 			// 入力チェック
 			if (!ModelState.IsValid)
 			{
-				Console.WriteLine("初期設定完了");
-				return View();
+				return View(model);
 			}
 
-			return RedirectToAction("Index");
+			var user = await _userManager.GetUserAsync(User);
+			if (user == null)
+			{
+				// [Authorize] が付与されているため通常はここに到達しない
+				// 念のためエラーハンドリング
+				return View(model);
+			}
+
+			if (user.IsInit)
+			{
+				// 初期化済みの場合はホーム画面へ遷移
+				return RedirectToAction("Home");
+			}
+
+			try
+			{
+				var taskExercise = new TaskNameCategorySet(TaskCategory.Exercise, new(model.TaskNameExercise));
+				var taskStudy = new TaskNameCategorySet(TaskCategory.Study, new(model.TaskNameStudy));
+				var taskHousework = new TaskNameCategorySet(TaskCategory.Housework, new(model.TaskNameHousework));
+				user.Initialize(model.DisplayName, [taskExercise, taskStudy, taskHousework]);
+				await _userManager.UpdateAsync(user);
+			}
+			catch (ArgumentException)
+			{
+				ModelState.AddModelError(string.Empty, "入力内容に誤りがあります");
+				return View(model);
+			}
+
+			return RedirectToAction("Home");
+		}
+
+		[Authorize]
+		[HttpGet("/home/home")]
+		public IActionResult Home()
+		{
+			return View("Home");
 		}
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

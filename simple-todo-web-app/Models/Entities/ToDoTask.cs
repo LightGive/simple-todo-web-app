@@ -1,6 +1,7 @@
 ﻿using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Common.Utilities;
 using simple_todo_web_app.Models.Enums;
+using simple_todo_web_app.Models.Parameters;
 using System.ComponentModel.DataAnnotations;
 
 namespace simple_todo_web_app.Models.Entities
@@ -44,37 +45,30 @@ namespace simple_todo_web_app.Models.Entities
 		/// </summary>
 		public bool IsDeleted { get; private set; }
 
-		public ToDoTask(string userId, TaskCategory category)
+		/// <summary>
+		/// EF Core用のコンストラクタ（直接使用しないこと）
+		/// </summary>
+		private ToDoTask() { }
+
+		public ToDoTask(string userId, TaskNameCategorySet taskNameCategorySet)
 		{
 			UserId = userId;
-			Category = category;
-			TaskName = string.Empty;
+			Category = taskNameCategorySet.Category;
+			TaskName = taskNameCategorySet.TaskName.TaskNameValue;
 			LastCompletedDate = null;
 		}
 
 		/// <summary>
-		/// タスク名を設定する
+		/// タスクを完了させる
 		/// </summary>
-		/// <param name="taskName"></param>
-		/// <exception cref="ArgumentException"></exception>
-		public void SetTaskName(string taskName)
-		{
-			if (string.IsNullOrWhiteSpace(taskName))
-			{
-				throw new ArgumentException("タスク名は必須です。", nameof(taskName));
-			}
-			if (taskName.Length > TaskConstants.NameMaxLength)
-			{
-				throw new ArgumentException($"タスク名は{TaskConstants.NameMaxLength}文字以内で入力してください。", nameof(taskName));
-			}
-			TaskName = taskName;
-		}
-
 		public void CompleteTask()
 		{
 			LastCompletedDate = DateTimeUtility.UtcToJstDate(DateTime.UtcNow);
 		}
 
+		/// <summary>
+		/// タスクを論理削除する
+		/// </summary>
 		public void DeleteTask()
 		{
 			IsDeleted = true;

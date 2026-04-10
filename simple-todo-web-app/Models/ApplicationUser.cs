@@ -1,7 +1,7 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Models.Entities;
-using simple_todo_web_app.Models.Enums;
+using simple_todo_web_app.Models.Parameters;
 using System.ComponentModel.DataAnnotations;
 
 namespace simple_todo_web_app.Models
@@ -45,10 +45,10 @@ namespace simple_todo_web_app.Models
 		}
 
 		/// <summary>
-		/// 初期化終了時
+		/// キャラ名とタスク名を設定する
 		/// </summary>
 		/// <param name="displayName"></param>
-		public void Initialize(string displayName)
+		public void Initialize(string displayName, params TaskNameCategorySet[] taskNameCategorySets)
 		{
 			if (string.IsNullOrWhiteSpace(displayName))
 			{
@@ -60,14 +60,12 @@ namespace simple_todo_web_app.Models
 				throw new ArgumentException($"キャラクター名は{CharacterConstants.NameMaxLength}文字以内で入力してください。", nameof(displayName));
 			}
 
+			TaskList.AddRange(taskNameCategorySets.Select(set => new ToDoTask(Id, set)));
+
 			DisplayName = displayName;
-			IsInit = true;
 			CharacterStats = new CharacterStats(Id);
 			UnallocatedPoints = new UnallocatedPoints(Id);
-
-			TaskList.Add(new ToDoTask(Id, TaskCategory.Exercise));
-			TaskList.Add(new ToDoTask(Id, TaskCategory.Study));
-			TaskList.Add(new ToDoTask(Id, TaskCategory.Housework));
+			IsInit = true;
 		}
 	}
 }
