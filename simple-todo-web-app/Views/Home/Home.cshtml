@@ -1,8 +1,87 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+﻿@using simple_todo_web_app.Common.Utilities
+@model simple_todo_web_app.Models.HomeViewModel;
+@{
+    ViewData["Title"] = "ホーム画面";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="text-center mt-5">
+    <h1>
+        ホーム画面
+    </h1>
+
+    <!-- 上段（横並び） -->
+    <div class="container mt-3">
+        <div class="row gx-5">
+            <!-- 本日のタスク -->
+            <div class="col-12 col-md-6">
+                <div class="border border-2 rounded">
+                    <h3>
+                        本日のタスク
+                    </h3>
+
+                    <!-- 自身のタスク数分ループ -->
+                    @foreach (var todoTask in Model.ToDoTaskList)
+                    {
+                        <!-- 論理削除済みのタスクは表示しない -->
+                        @if (todoTask.IsDeleted) { continue; }
+
+                        <div class="d-flex justify-content-between align-items-center py-2">
+                            <!-- タスク名 -->
+                            <span class="mx-3">@todoTask.TaskName</span>
+                            <!-- タスク完了ボタン -->
+                            @if (todoTask.IsCompletedToday)
+                            {
+                                <button class="btn btn-primary btn-task mx-3" disabled>完了済み</button>
+                            }
+                            else
+                            {
+                                <form method="post"
+                                      asp-action="CompleteTask"
+                                      asp-route-taskid="@todoTask.TaskId">
+                                    <button type="submit"
+                                            class="btn btn-primary btn-task mx-3">
+                                        完了
+                                    </button>
+                                </form>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+            <!-- タスク完了履歴 -->
+            <div class="col-12 col-md-6">
+                <div class="border border-2 rounded">
+                    <h3>
+                        タスク完了履歴
+                    </h3>
+                    <!-- タスク完了履歴可視化欄 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 下段（横並び） -->
+    <div class="container mt-3">
+        <div class="row gx-5">
+            <!-- キャラクター情報 -->
+            <div class="col-12 col-md-6">
+                <div class="border border-2 rounded">
+                    <h3>
+                        キャラクター情報
+                    </h3>
+                    <p>@Model.DisplayName</p>
+                    <p>Level:@Model.Level</p>
+                </div>
+            </div>
+
+            <!-- ステータス情報 -->
+            <div class="col-12 col-md-6">
+                <div class="border border-2 rounded">
+                    <h3>
+                        ステータス情報
+                    </h3>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>

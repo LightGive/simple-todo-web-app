@@ -15,5 +15,6 @@ namespace simple_todo_web_app.Models
 		public List<ToDoTask> ToDoTaskList { get; set; } = new();
 		public CharacterStats? CharacterStats { get; set; } = null;
 		public UnallocatedPoints? UnallocatedPoints { get; set; } = null;
+		public bool IsValid => CharacterStats != null && UnallocatedPoints != null;
 	}
 }

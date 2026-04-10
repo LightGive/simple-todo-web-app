@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using simple_todo_web_app.Data;
 using simple_todo_web_app.Models;
+using simple_todo_web_app.Models.Entities;
 using simple_todo_web_app.Models.Enums;
 using simple_todo_web_app.Models.Parameters;
 using System.Diagnostics;
@@ -11,10 +14,14 @@ namespace simple_todo_web_app.Controllers
 	public class HomeController : Controller
 	{
 		readonly UserManager<ApplicationUser> _userManager;
+		readonly ApplicationDbContext _context;
 
-		public HomeController(UserManager<ApplicationUser> userManager)
+		public HomeController(
+			UserManager<ApplicationUser> userManager,
+			ApplicationDbContext context)
 		{
 			_userManager = userManager;
+			_context = context;
 		}
 
 		[Authorize]
@@ -87,9 +94,105 @@ namespace simple_todo_web_app.Controllers
 
 		[Authorize]
 		[HttpGet("/home/home")]
-		public IActionResult Home()
+		public async Task<IActionResult> Home()
 		{
-			return View("Home");
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return RedirectToAction("Login", "Account");
+			}
+
+			// Include でナビゲーションプロパティを一括取得
+			var user = await _context.Users
+				.Include(u => u.TaskList)
+				.Include(u => u.CharacterStats)
+				.Include(u => u.UnallocatedPoints)
+				.FirstOrDefaultAsync(u => u.Id == userId);
+
+			if (user == null)
+			{
+				return RedirectToAction("Login", "Account");
+			}
+
+			// 初期設定未完了の場合は初期設定画面へ
+			if (!user.IsInit)
+			{
+				return RedirectToAction("InitialSetup");
+			}
+
+			// レベル = タスク完了ログの総件数
+			var level = await _context.TaskCompletionLogs
+				.CountAsync(l => l.UserId == userId);
+
+			var model = new HomeViewModel
+			{
+				DisplayName = user.DisplayName,
+				Level = level,
+				ToDoTaskList = user.TaskList,
+				CharacterStats = user.CharacterStats,
+				UnallocatedPoints = user.UnallocatedPoints,
+			};
+
+			return View("Home", model);
+		}
+
+		[Authorize]
+		[HttpPost("/api/tasks/{taskId}/complete")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> CompleteTask(int taskId)
+		{
+#if DEBUG
+			Console.WriteLine($"タスク完了　タスクID:{taskId}");
+#endif
+			// 保存処理
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return RedirectToAction("Login", "Account");
+			}
+
+			var todoTask = await _context.Tasks
+				.Where(t => t.TaskId == taskId && t.UserId == userId)
+				.FirstOrDefaultAsync();
+
+			if (todoTask == null)
+			{
+				// UserId, TaskId に該当するタスクが存在しない
+				return RedirectToAction("Home");
+
+			}
+			if (todoTask.IsCompletedToday)
+			{
+				// 本日のタスクが既に完了している
+				return RedirectToAction("Home");
+			}
+
+#if DEBUG
+			Console.WriteLine("タスク完了処理の開始");
+#endif
+			// タスクの完了処理
+			todoTask.CompleteTask();
+
+			// TODO: ステータスポイントを付与
+
+#if DEBUG
+			Console.WriteLine("タスク完了ログの保存");
+#endif
+			// タスク完了ログの保存
+			var log = new TaskCompletionLog(userId, taskId);
+			_context.TaskCompletionLogs.Add(log);
+
+			// 保存
+			try{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException)
+			{
+				// 保存エラー時はホームに戻す
+				return RedirectToAction("Home");
+			}
+
+			return RedirectToAction("Home");
 		}
 
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
