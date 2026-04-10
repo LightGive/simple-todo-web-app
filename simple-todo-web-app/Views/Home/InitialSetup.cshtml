@@ -15,7 +15,7 @@
 
             <!-- 名前 -->
             <div class="row mb-1">
-                <label for="name" class="col form-label">
+                <label for="input-display-name" class="col form-label">
                     勇者の名前（※他者から見えます）
                 </label>
                 <input type="text"
@@ -59,24 +59,13 @@
             </div>
 
             <!-- バリデーション結果表示 -->
-            @if (!ViewData.ModelState.IsValid)
-            {
-                <style>
-                                .validation-summary-errors ul {
-                                    list-style: none;
-                                    padding: 0;
-                                    margin: 0;
-                                }
-                </style>
-                <div class="alert alert-primary mb-4" role="alert">
-                    <div asp-validation-summary="All"></div>
-                </div>
-            }
+            <div id="validation-container" class="alert alert-primary mb-4" role="alert" style="display:none">
+                <div asp-validation-summary="All"></div>
+            </div>
 
             <!-- 決定ボタン -->
-            <button 
-                type="submit" 
-                class="btn btn-primary mt-4">
+            <button type="submit"
+                    class="btn btn-primary mt-4">
                 次へ
             </button>
         </form>
@@ -84,5 +73,5 @@
 </div>
 
 @section Scripts {
-    @await Html.PartialAsync("_ValidationScriptsPartial")
+    @await Html.PartialAsync("_FormValidation")
 }
