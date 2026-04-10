@@ -41,7 +41,6 @@
 登録成功時、確認メールを送信する。  
 同一トランザクション内で以下の初期データを一括作成する。
 
-- `Tasks` × 3件（Category: 0=運動 / 1=勉強 / 2=家事、TaskName: 空文字）
 - `CharacterStats` × 1件（全ステータス初期値 10）
 - `UnallocatedPoints` × 1件（全ポイント 0）
 
@@ -178,10 +177,10 @@ ASP.NET Core Identity のパスワードリセット処理を実行する。
 ### 処理内容
 
 キャラクター名・3カテゴリのタスク名を POST 送信する。
-以下の更新処理をトランザクション内で一括実行する。
+以下の処理をトランザクション内で一括実行する。
 
 - `AspNetUsers.DisplayName` をキャラクター名で更新する
-- `Tasks`（Category: 0=運動 / 1=勉強 / 2=家事）の `TaskName` をそれぞれ更新する
+- `Tasks` × 3件（Category: 0=運動 / 1=勉強 / 2=家事）を入力されたタスク名で新規作成する
 - `AspNetUsers.IsInit` を `true` に更新する
 
 ### 必要なデータ
