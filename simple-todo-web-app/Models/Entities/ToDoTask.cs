@@ -3,6 +3,7 @@ using simple_todo_web_app.Common.Utilities;
 using simple_todo_web_app.Models.Enums;
 using simple_todo_web_app.Models.Parameters;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace simple_todo_web_app.Models.Entities
 {
@@ -36,7 +37,7 @@ namespace simple_todo_web_app.Models.Entities
 		public string TaskName { get; private set; }
 
 		/// <summary>
-		/// 最終完了日
+		/// 最終完了日（JST）
 		/// </summary>
 		public DateOnly? LastCompletedDate { get; private set; }
 
@@ -44,6 +45,12 @@ namespace simple_todo_web_app.Models.Entities
 		/// 論理削除フラグ
 		/// </summary>
 		public bool IsDeleted { get; private set; }
+
+		/// <summary>
+		/// 本日のタスクが完了しているか（JST）
+		/// </summary>
+		[NotMapped]
+		public bool IsCompletedToday => LastCompletedDate == DateTimeUtility.UtcToJstDate(DateTime.UtcNow);
 
 		/// <summary>
 		/// EF Core用のコンストラクタ（直接使用しないこと）
