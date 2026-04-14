@@ -4,11 +4,24 @@
     ViewData["Title"] = "ホーム画面";
 }
 
+@section Header {
+    <nav class="navbar bg-primary" data-bs-theme="dark">
+        <div class="container-fluid">
+            <span class="navbar-brand">習慣化の勇者</span>
+            <form asp-controller="Account" asp-action="Logout">
+                <button type="submit" class="btn btn-outline-light">
+                    ログアウト
+                </button>
+            </form>
+        </div>
+    </nav>
+}
+
 <div class="text-center mt-5">
+
     <h1>
         ホーム画面
     </h1>
-
     <!-- 上段（横並び） -->
     <div class="container mt-3">
         <div class="row gx-5">

@@ -171,5 +171,13 @@ namespace simple_todo_web_app.Controllers
 			// 登録完了画面にリダイレクト
 			return RedirectToAction("RegisterConfirmation");
 		}
+
+		[HttpPost("/account/logout")]
+		public async Task<IActionResult> Logout()
+		{
+			Console.WriteLine("ログアウト処理開始");
+			await _signInManager.SignOutAsync();
+			return RedirectToAction("Login");
+		}
 	}
 }
