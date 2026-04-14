@@ -151,9 +151,13 @@ namespace simple_todo_web_app.Controllers
 				return RedirectToAction("Login", "Account");
 			}
 
+			// DBアクセス
 			var todoTask = await _context.Tasks
 				.Where(t => t.TaskId == taskId && t.UserId == userId)
 				.FirstOrDefaultAsync();
+			var point = await _context.UnallocatedPoints
+				.Where(x => x.UserId == userId)
+				.SingleAsync();
 
 			if (todoTask == null)
 			{
@@ -173,7 +177,15 @@ namespace simple_todo_web_app.Controllers
 			// タスクの完了処理
 			todoTask.CompleteTask();
 
-			// TODO: ステータスポイントを付与
+			// ステータスポイントを付与
+			switch (todoTask.Category)
+			{
+				case TaskCategory.Exercise: point.AddPoints(1, 0, 0); break;
+				case TaskCategory.Study: point.AddPoints(0, 1, 0); break;
+				case TaskCategory.Housework: point.AddPoints(0, 0, 1); break;
+				default:
+					throw new UnreachableException($"未定義のカテゴリ: {todoTask.Category}");
+			}
 
 #if DEBUG
 			Console.WriteLine("タスク完了ログの保存");
@@ -183,7 +195,8 @@ namespace simple_todo_web_app.Controllers
 			_context.TaskCompletionLogs.Add(log);
 
 			// 保存
-			try{
+			try
+			{
 				await _context.SaveChangesAsync();
 			}
 			catch (DbUpdateException)
