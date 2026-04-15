@@ -151,13 +151,24 @@ namespace simple_todo_web_app.Controllers
 				return RedirectToAction("Login", "Account");
 			}
 
-			// DBアクセス
-			var todoTask = await _context.Tasks
-				.Where(t => t.TaskId == taskId && t.UserId == userId)
-				.FirstOrDefaultAsync();
-			var point = await _context.UnallocatedPoints
-				.Where(x => x.UserId == userId)
-				.SingleAsync();
+
+			ToDoTask? todoTask = null;
+			UnallocatedPoints? point = null;
+			try
+			{
+				// DBアクセス
+				todoTask = await _context.Tasks
+					.Where(t => t.TaskId == taskId && t.UserId == userId)
+					.FirstOrDefaultAsync();
+				point = await _context.UnallocatedPoints
+					.Where(x => x.UserId == userId)
+					.SingleAsync();
+			}
+			catch(InvalidOperationException)
+			{
+				// 指定のUserIdのUnallocatedPointsが存在しない場合
+				return RedirectToAction("Home");
+			}
 
 			if (todoTask == null)
 			{
@@ -226,13 +237,23 @@ namespace simple_todo_web_app.Controllers
 				return BadRequest();
 			}
 
-			// DBアクセス
-			var unallocatedPoints = await _context.UnallocatedPoints
-				.Where(x => x.UserId == userId)
-				.SingleAsync();
-			var characterStats = await _context.CharacterStats
-				.Where(x => x.UserId == userId)
-				.SingleAsync();
+			UnallocatedPoints? unallocatedPoints = null;
+			CharacterStats? characterStats = null;
+			try
+			{
+				// DBアクセス
+				unallocatedPoints = await _context.UnallocatedPoints
+					.Where(x => x.UserId == userId)
+					.SingleAsync();
+				characterStats = await _context.CharacterStats
+					.Where(x => x.UserId == userId)
+					.SingleAsync();
+			}
+			catch (InvalidOperationException)
+			{
+				// 指定のUserIdのUnallocatedPointsまたは CharacterStatsが存在しない場合
+				return BadRequest();
+			}
 
 			try
 			{
