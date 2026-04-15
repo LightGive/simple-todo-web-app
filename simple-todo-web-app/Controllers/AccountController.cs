@@ -172,6 +172,40 @@ namespace simple_todo_web_app.Controllers
 			return RedirectToAction("RegisterConfirmation");
 		}
 
+		[HttpGet("/account/forgot-password")]
+		public IActionResult ForgotPassword()
+		{
+			return View("ForgotPassword");
+		}
+
+		/// <summary>
+		/// パスワード再設定メール送信
+		/// </summary>
+		[HttpPost("/account/forgot-password")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ForgotPassword(ForgotPasswordViewModel model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
+
+			// 登録済みの場合のみトークンを生成する
+			// ユーザー列挙攻撃対策: 未登録メールでも完了画面へ遷移する
+			var user = await _userManager.FindByEmailAsync(model.Email);
+			if (user != null)
+			{
+				var token = await _userManager.GeneratePasswordResetTokenAsync(user);
+				// TODO: メール送信処理（未実装）
+				// 再設定URLは /account/reset-password?email={email}&token={token} 形式
+#if DEBUG
+				var encodedToken = Uri.EscapeDataString(token);
+				Console.WriteLine($"[DEBUG] パスワード再設定URL: /account/reset-password?email={user.Email}&token={encodedToken}");
+#endif
+			}
+
+			return RedirectToAction("ForgotPasswordConfirmation");
+		}
 		[HttpPost("/account/logout")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()
