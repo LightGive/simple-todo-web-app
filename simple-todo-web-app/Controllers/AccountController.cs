@@ -206,6 +206,61 @@ namespace simple_todo_web_app.Controllers
 
 			return RedirectToAction("ForgotPasswordConfirmation");
 		}
+
+		/// <summary>
+		/// パスワード再設定画面表示
+		/// </summary>
+		[HttpGet("/account/reset-password")]
+		public IActionResult ResetPassword(string? email, string? token)
+		{
+			if (string.IsNullOrEmpty(email) || string.IsNullOrEmpty(token))
+			{
+				return RedirectToAction("Login");
+			}
+
+			var model = new ResetPasswordViewModel
+			{
+				Email = email,
+				Token = token,
+			};
+			return View("ResetPassword", model);
+		}
+
+		/// <summary>
+		/// パスワード再設定
+		/// </summary>
+		[HttpPost("/account/reset-password")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> ResetPassword(ResetPasswordViewModel model)
+		{
+			if (!ModelState.IsValid)
+			{
+				return View(model);
+			}
+
+			var user = await _userManager.FindByEmailAsync(model.Email);
+			if (user == null)
+			{
+				// セキュリティ上、ユーザーの存在有無を明かさずログイン画面へ遷移
+				return RedirectToAction("Login");
+			}
+
+			var result = await _userManager.ResetPasswordAsync(user, model.Token, model.NewPassword);
+			if (!result.Succeeded)
+			{
+				foreach (var error in result.Errors)
+				{
+					var message = error.Code == "InvalidToken"
+						? "再設定リンクの有効期限が切れています。再度リクエストしてください。"
+						: "再設定処理中にエラーが発生しました。しばらく経ってから再度お試しください。";
+					ModelState.AddModelError(string.Empty, message);
+				}
+				return View(model);
+			}
+
+			return RedirectToAction("Login");
+		}
+
 		[HttpPost("/account/logout")]
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()
