@@ -1,5 +1,4 @@
-﻿@using simple_todo_web_app.Common.Utilities
-@model simple_todo_web_app.Models.HomeViewModel;
+﻿@model simple_todo_web_app.Models.HomeViewModel;
 @{
     ViewData["Title"] = "ホーム画面";
 }
@@ -8,7 +7,9 @@
     <nav class="navbar bg-primary" data-bs-theme="dark">
         <div class="container-fluid">
             <span class="navbar-brand">習慣化の勇者</span>
-            <form asp-controller="Account" asp-action="Logout">
+            <form asp-controller="Account"
+                  asp-action="Logout"
+                  method="post">
                 <button type="submit" class="btn btn-outline-light">
                     ログアウト
                 </button>
@@ -107,7 +108,7 @@
                     </h3>
 
                     <!-- パラメーター表示 -->
-                    @if (Model != null && Model.IsValid)
+                    @if (Model.IsValid)
                     {
                         <div>運動ポイント：<span id="exercise-points"></span></div>
                         <div>勉強ポイント：<span id="study-points"></span></div>
@@ -175,7 +176,7 @@
     @Html.AntiForgeryToken()
     <script src="~/js/unallocatedPoints.js" asp-append-version="true"></script>
     <script src="~/js/statAllocation.js" asp-append-version="true"></script>
-    @if (Model != null && Model.IsValid)
+    @if (Model.IsValid)
     {
         <script>
             unAllocatedPoints.ExercisePoints = @(Model.UnallocatedPoints!.ExercisePoints);
