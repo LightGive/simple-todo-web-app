@@ -208,6 +208,59 @@ namespace simple_todo_web_app.Controllers
 			return RedirectToAction("Home");
 		}
 
+		[Authorize]
+		[HttpPost("/api/character/allocate")]
+		[ValidateAntiForgeryToken]
+		public async Task<IActionResult> Allocate([FromBody] StatAllocation status)
+		{
+			if (!ModelState.IsValid)
+			{
+				// ポイントが負の値の場合
+				return BadRequest();
+			}
+
+			// 保存処理
+			var userId = _userManager.GetUserId(User);
+			if (userId == null)
+			{
+				return BadRequest();
+			}
+
+			// DBアクセス
+			var unallocatedPoints = await _context.UnallocatedPoints
+				.Where(x => x.UserId == userId)
+				.SingleAsync();
+			var characterStats = await _context.CharacterStats
+				.Where(x => x.UserId == userId)
+				.SingleAsync();
+
+			try
+			{
+				// 未割当のポイントを使用
+				unallocatedPoints.UsePoints(status.ExercisePointsCost, status.StudyPointsCost, status.HouseworkPointsCost);
+			}
+			catch (InvalidOperationException)
+			{
+				// ポイントが不足している場合はエラー
+				return BadRequest();
+			}
+
+			characterStats.AddStatus(status);
+
+			// 保存
+			try
+			{
+				await _context.SaveChangesAsync();
+			}
+			catch (DbUpdateException)
+			{
+				// 保存エラー時はホームに戻す
+				return StatusCode(500);
+			}
+
+			return Ok();
+		}
+
 		[ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
 		public IActionResult Error()
 		{

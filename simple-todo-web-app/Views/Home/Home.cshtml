@@ -93,20 +93,9 @@
                         </div>
                         <!-- 右 -->
                         <div class="w-50">
-                            <!-- 未割当ポイント -->
-                            @if (Model != null && Model.IsValid)
-                            {
-                                <div>運動ポイント：@Model.UnallocatedPoints!.ExercisePoints</div>
-                                <div>勉強ポイント：@Model.UnallocatedPoints!.StudyPoints</div>
-                                <div>家事ポイント：@Model.UnallocatedPoints!.HouseworkPoints</div>
-                            }
-                            else
-                            {
-                                <div>未割当ポイントの情報を取得できませんでした</div>
-                            }
+                            <!-- 今後実装 -->
                         </div>
                     </div>
-
                 </div>
             </div>
 
@@ -120,15 +109,19 @@
                     <!-- パラメーター表示 -->
                     @if (Model != null && Model.IsValid)
                     {
+                        <div>運動ポイント：<span id="exercise-points"></span></div>
+                        <div>勉強ポイント：<span id="study-points"></span></div>
+                        <div>家事ポイント：<span id="housework-points"></span></div>
+
                         (string name, int param)[] stats = new[]
                         {
-                                ("HP",Model.CharacterStats!.HP),
-                                ("MP",Model.CharacterStats.MP),
-                                ("ATK",Model.CharacterStats.ATK),
-                                ("DEF",Model.CharacterStats.DEF),
-                                ("SPD",Model.CharacterStats.SPD),
-                                ("MATK",Model.CharacterStats.MATK),
-                            };
+                            ("HP",Model.CharacterStats!.HP),
+                            ("MP",Model.CharacterStats.MP),
+                            ("ATK",Model.CharacterStats.ATK),
+                            ("DEF",Model.CharacterStats.DEF),
+                            ("SPD",Model.CharacterStats.SPD),
+                            ("MATK",Model.CharacterStats.MATK),
+                        };
 
                         @foreach (var stat in stats)
                         {
@@ -150,10 +143,23 @@
 
                                 <!-- ステ振りボタン-->
                                 <div class="text-center" style="flex:3">
-                                    <button type="button" class="btn btn-primary w-100 disabled">＋</button>
+                                    <button type="button" class="btn btn-primary w-100" data-stat="@stat.name">＋</button>
                                 </div>
                             </div>
                         }
+                        
+                        <div class="text-end w-100 py-2">
+
+                            <!-- ステ振りリセット-->
+                            <button type="button" id="stat-reset" style="flex:3" class="btn btn-primary">
+                                リセット
+                            </button>
+
+                            <!-- ステ振り確定-->
+                            <button type="button" id="stat-apply" style="flex:3" class="btn btn-primary">
+                                振り分け確定
+                            </button>
+                        </div>
                     }
                     else
                     {
@@ -164,3 +170,19 @@
         </div>
     </div>
 </div>
+
+@section Scripts {
+    @Html.AntiForgeryToken()
+    <script src="~/js/unallocatedPoints.js" asp-append-version="true"></script>
+    <script src="~/js/statAllocation.js" asp-append-version="true"></script>
+    @if (Model != null && Model.IsValid)
+    {
+        <script>
+            unAllocatedPoints.ExercisePoints = @(Model.UnallocatedPoints!.ExercisePoints);
+            unAllocatedPoints.StudyPoints = @(Model.UnallocatedPoints.StudyPoints);
+            unAllocatedPoints.HouseworkPoints = @(Model.UnallocatedPoints.HouseworkPoints);
+            updatePointsDisplay();
+            updateButtons();
+        </script>
+    }
+}
