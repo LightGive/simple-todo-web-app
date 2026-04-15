@@ -2,7 +2,7 @@
 {
 	public class DateTimeUtility
 	{
-		static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.FindSystemTimeZoneById("Tokyo Standard Time");
+		static readonly TimeZoneInfo JstTimeZone = TimeZoneInfo.FindSystemTimeZoneById(OperatingSystem.IsWindows() ? "Tokyo Standard Time" : "Asia/Tokyo");
 
 		public static DateTime UtcToJst(DateTime utcDateTime)
 		{
