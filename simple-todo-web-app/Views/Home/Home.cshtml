@@ -109,7 +109,7 @@
                     </h3>
 
                     <!-- パラメーター表示 -->
-                    @if (Model != null && Model.IsValid)
+                    @if (Model.IsValid)
                     {
                         <div>運動ポイント：<span id="exercise-points"></span></div>
                         <div>勉強ポイント：<span id="study-points"></span></div>
@@ -177,7 +177,7 @@
     @Html.AntiForgeryToken()
     <script src="~/js/unallocatedPoints.js" asp-append-version="true"></script>
     <script src="~/js/statAllocation.js" asp-append-version="true"></script>
-    @if (Model != null && Model.IsValid)
+    @if (Model.IsValid)
     {
         <script>
             unAllocatedPoints.ExercisePoints = @(Model.UnallocatedPoints!.ExercisePoints);
