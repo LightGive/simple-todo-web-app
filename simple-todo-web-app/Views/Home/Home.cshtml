@@ -8,7 +8,9 @@
     <nav class="navbar bg-primary" data-bs-theme="dark">
         <div class="container-fluid">
             <span class="navbar-brand">習慣化の勇者</span>
-            <form asp-controller="Account" asp-action="Logout">
+            <form asp-controller="Account"
+                  asp-action="Logout"
+                  method="post">
                 <button type="submit" class="btn btn-outline-light">
                     ログアウト
                 </button>

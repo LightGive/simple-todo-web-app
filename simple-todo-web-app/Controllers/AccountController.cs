@@ -173,6 +173,7 @@ namespace simple_todo_web_app.Controllers
 		}
 
 		[HttpPost("/account/logout")]
+		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()
 		{
 			Console.WriteLine("ログアウト処理開始");
