@@ -93,7 +93,17 @@
                         </div>
                         <!-- 右 -->
                         <div class="w-50">
-                            今後実装予定
+                            <!-- 未割当ポイント -->
+                            @if (Model != null && Model.IsValid)
+                            {
+                                <div>運動ポイント：@Model.UnallocatedPoints!.ExercisePoints</div>
+                                <div>勉強ポイント：@Model.UnallocatedPoints!.StudyPoints</div>
+                                <div>家事ポイント：@Model.UnallocatedPoints!.HouseworkPoints</div>
+                            }
+                            else
+                            {
+                                <div>未割当ポイントの情報を取得できませんでした</div>
+                            }
                         </div>
                     </div>
 
