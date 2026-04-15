@@ -176,7 +176,9 @@ namespace simple_todo_web_app.Controllers
 		[ValidateAntiForgeryToken]
 		public async Task<IActionResult> Logout()
 		{
+#if DEBUG
 			Console.WriteLine("ログアウト処理開始");
+#endif
 			await _signInManager.SignOutAsync();
 			return RedirectToAction("Login");
 		}
