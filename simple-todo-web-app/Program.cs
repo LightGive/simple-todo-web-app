@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Data;
 using simple_todo_web_app.Models;
+using simple_todo_web_app.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -35,6 +36,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 });
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddScoped<IEmailSender, AmazonSesEmailSender>();
 
 var app = builder.Build();
 

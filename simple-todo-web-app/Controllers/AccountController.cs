@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Models;
+using simple_todo_web_app.Services;
 
 namespace simple_todo_web_app.Controllers
 {
@@ -8,13 +10,16 @@ namespace simple_todo_web_app.Controllers
 	{
 		readonly UserManager<ApplicationUser> _userManager;
 		readonly SignInManager<ApplicationUser> _signInManager;
+		readonly IEmailSender _emailSender;
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager)
+			SignInManager<ApplicationUser> signInManager,
+			IEmailSender emailSender)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
+			_emailSender = emailSender;
 		}
 
 		[HttpGet("/account/login")]
@@ -193,13 +198,16 @@ namespace simple_todo_web_app.Controllers
 			// 登録済みの場合のみトークンを生成する
 			// ユーザー列挙攻撃対策: 未登録メールでも完了画面へ遷移する
 			var user = await _userManager.FindByEmailAsync(model.Email);
-			if (user != null)
+			if (user != null && !string.IsNullOrEmpty(user.Email))
 			{
 				var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-				// TODO: メール送信処理（未実装）
-				// 再設定URLは /account/reset-password?email={email}&token={token} 形式
-#if DEBUG
 				var encodedToken = Uri.EscapeDataString(token);
+				var resetUrl = $"{Request.Scheme}://{Request.Host}/account/reset-password?email={user.Email}&token={encodedToken}";
+				await _emailSender.SendAsync(
+					user.Email,
+					EmailConstants.PasswordReset.Subject,
+					string.Format(EmailConstants.PasswordReset.BodyTemplate, resetUrl));
+#if DEBUG
 				Console.WriteLine($"[DEBUG] パスワード再設定URL: /account/reset-password?email={user.Email}&token={encodedToken}");
 #endif
 			}
