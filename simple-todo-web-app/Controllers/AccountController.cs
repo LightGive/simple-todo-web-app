@@ -1,6 +1,8 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using simple_todo_web_app.Common.Constants;
 using simple_todo_web_app.Models;
+using simple_todo_web_app.Services;
 
 namespace simple_todo_web_app.Controllers
 {
@@ -8,13 +10,19 @@ namespace simple_todo_web_app.Controllers
 	{
 		readonly UserManager<ApplicationUser> _userManager;
 		readonly SignInManager<ApplicationUser> _signInManager;
+		readonly IEmailSender _emailSender;
+		readonly EmailService _emailService;
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
-			SignInManager<ApplicationUser> signInManager)
+			SignInManager<ApplicationUser> signInManager,
+			IEmailSender emailSender,
+			EmailService emailServ)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
+			_emailSender = emailSender;
+			_emailService = emailServ;
 		}
 
 		[HttpGet("/account/login")]
@@ -168,8 +176,48 @@ namespace simple_todo_web_app.Controllers
 				return View(model);
 			}
 
+			var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+			var encodedToken = Uri.EscapeDataString(token);
+			var resetUrl = $"{Request.Scheme}://{Request.Host}/account/confirm-email?userId={user.Id}&token={encodedToken}";
+
+			// メール送信
+			await _emailService.SendAsync(
+				user.Email,
+				EmailConstants.RegisterConfirmation.Subject,
+				string.Format(EmailConstants.RegisterConfirmation.BodyTemplate, resetUrl));
+
 			// 登録完了画面にリダイレクト
 			return RedirectToAction("RegisterConfirmation");
+		}
+
+		/// <summary>
+		/// メールアドレス認証
+		/// </summary>
+		[HttpGet("/account/confirm-email")]
+		public async Task<IActionResult> ConfirmEmail(string? userId, string? token)
+		{
+			if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効です。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			var user = await _userManager.FindByIdAsync(userId);
+			if (user == null)
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効です。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			var result = await _userManager.ConfirmEmailAsync(user, token);
+			if (!result.Succeeded)
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効または有効期限切れです。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			TempData["SuccessMessage"] = "メールアドレスの認証が完了しました。ログインしてください。";
+			return RedirectToAction("Login");
 		}
 
 		[HttpGet("/account/forgot-password")]
@@ -193,13 +241,18 @@ namespace simple_todo_web_app.Controllers
 			// 登録済みの場合のみトークンを生成する
 			// ユーザー列挙攻撃対策: 未登録メールでも完了画面へ遷移する
 			var user = await _userManager.FindByEmailAsync(model.Email);
-			if (user != null)
+			if (user != null && !string.IsNullOrEmpty(user.Email))
 			{
 				var token = await _userManager.GeneratePasswordResetTokenAsync(user);
-				// TODO: メール送信処理（未実装）
-				// 再設定URLは /account/reset-password?email={email}&token={token} 形式
-#if DEBUG
 				var encodedToken = Uri.EscapeDataString(token);
+				var resetUrl = $"{Request.Scheme}://{Request.Host}/account/reset-password?email={user.Email}&token={encodedToken}";
+
+				// メール送信
+				await _emailService.SendAsync(
+					user.Email,
+					EmailConstants.PasswordReset.Subject,
+					string.Format(EmailConstants.PasswordReset.BodyTemplate, resetUrl));
+#if DEBUG
 				Console.WriteLine($"[DEBUG] パスワード再設定URL: /account/reset-password?email={user.Email}&token={encodedToken}");
 #endif
 			}
