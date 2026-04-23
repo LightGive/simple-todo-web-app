@@ -169,17 +169,16 @@ GitHubの草のような「完了履歴の可視化」に使用する。
 
 ### ユーザー登録時（SCR002）
 
-ユーザー登録完了時に、以下のレコードをトランザクション内で一括作成する。
-
-1. `CharacterStats` × 1件（全ステータス初期値 10）
-2. `UnallocatedPoints` × 1件（全ポイント 0）
+ユーザー登録完了時に、確認メールを送信する。初期データの作成は行わない。
 
 ### 初期設定入力時（SCR007）
 
 初期設定完了時に、以下のレコードを作成・更新する。
 
 1. `Tasks` × 3件（運動 / 勉強 / 家事）。入力されたタスク名で新規作成する
-2. `AspNetUsers.DisplayName` をキャラクター名で更新する
-3. `AspNetUsers.IsInit` を `1`（true）に更新する
+2. `CharacterStats` × 1件（全ステータス初期値 10）を作成する
+3. `UnallocatedPoints` × 1件（全ポイント 0）を作成する
+4. `AspNetUsers.DisplayName` をキャラクター名で更新する
+5. `AspNetUsers.IsInit` を `1`（true）に更新する
 
 > AspNetUsers.IsInit は登録時 `0`（false）で作成し、SCR007 での設定完了時に `1`（true）へ更新する。

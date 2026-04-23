@@ -38,11 +38,7 @@
 ### 処理内容
 
 メールアドレス・パスワードを POST 送信し、ASP.NET Core Identity でユーザーを作成する。  
-登録成功時、確認メールを送信する。  
-同一トランザクション内で以下の初期データを一括作成する。
-
-- `CharacterStats` × 1件（全ステータス初期値 10）
-- `UnallocatedPoints` × 1件（全ポイント 0）
+登録成功時、確認メールを送信する。
 
 ### 必要なデータ
 
@@ -181,6 +177,8 @@ ASP.NET Core Identity のパスワードリセット処理を実行する。
 
 - `AspNetUsers.DisplayName` をキャラクター名で更新する
 - `Tasks` × 3件（Category: 0=運動 / 1=勉強 / 2=家事）を入力されたタスク名で新規作成する
+- `CharacterStats` × 1件（全ステータス初期値 10）を作成する
+- `UnallocatedPoints` × 1件（全ポイント 0）を作成する
 - `AspNetUsers.IsInit` を `true` に更新する
 
 ### 必要なデータ
