@@ -47,11 +47,8 @@ Thumbs.db
 # 秘密情報（重要）
 # =========================
 appsettings.Development.json
-appsettings.*.json
+appsettings.json
 .env
-
-# テンプレートファイルは除外しない
-!appsettings.json
 
 # =========================
 # Azure / Publish関連
