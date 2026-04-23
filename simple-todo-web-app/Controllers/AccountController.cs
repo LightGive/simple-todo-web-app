@@ -11,15 +11,18 @@ namespace simple_todo_web_app.Controllers
 		readonly UserManager<ApplicationUser> _userManager;
 		readonly SignInManager<ApplicationUser> _signInManager;
 		readonly IEmailSender _emailSender;
+		readonly EmailService _emailService;
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
-			IEmailSender emailSender)
+			IEmailSender emailSender,
+			EmailService emailServ)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
 			_emailSender = emailSender;
+			_emailService = emailServ;
 		}
 
 		[HttpGet("/account/login")]
@@ -173,8 +176,48 @@ namespace simple_todo_web_app.Controllers
 				return View(model);
 			}
 
+			var token = await _userManager.GenerateEmailConfirmationTokenAsync(user);
+			var encodedToken = Uri.EscapeDataString(token);
+			var resetUrl = $"{Request.Scheme}://{Request.Host}/account/confirm-email?userId={user.Id}&token={encodedToken}";
+
+			// メール送信
+			await _emailService.SendAsync(
+				user.Email,
+				EmailConstants.RegisterConfirmation.Subject,
+				string.Format(EmailConstants.RegisterConfirmation.BodyTemplate, resetUrl));
+
 			// 登録完了画面にリダイレクト
 			return RedirectToAction("RegisterConfirmation");
+		}
+
+		/// <summary>
+		/// メールアドレス認証
+		/// </summary>
+		[HttpGet("/account/confirm-email")]
+		public async Task<IActionResult> ConfirmEmail(string? userId, string? token)
+		{
+			if (string.IsNullOrEmpty(userId) || string.IsNullOrEmpty(token))
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効です。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			var user = await _userManager.FindByIdAsync(userId);
+			if (user == null)
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効です。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			var result = await _userManager.ConfirmEmailAsync(user, token);
+			if (!result.Succeeded)
+			{
+				TempData["ErrorMessage"] = "認証リンクが無効または有効期限切れです。再度登録をお試しください。";
+				return RedirectToAction("Login");
+			}
+
+			TempData["SuccessMessage"] = "メールアドレスの認証が完了しました。ログインしてください。";
+			return RedirectToAction("Login");
 		}
 
 		[HttpGet("/account/forgot-password")]
@@ -203,7 +246,9 @@ namespace simple_todo_web_app.Controllers
 				var token = await _userManager.GeneratePasswordResetTokenAsync(user);
 				var encodedToken = Uri.EscapeDataString(token);
 				var resetUrl = $"{Request.Scheme}://{Request.Host}/account/reset-password?email={user.Email}&token={encodedToken}";
-				await _emailSender.SendAsync(
+
+				// メール送信
+				await _emailService.SendAsync(
 					user.Email,
 					EmailConstants.PasswordReset.Subject,
 					string.Format(EmailConstants.PasswordReset.BodyTemplate, resetUrl));
