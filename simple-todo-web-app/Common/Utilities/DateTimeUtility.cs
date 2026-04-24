@@ -13,5 +13,14 @@
 		{
 			return DateOnly.FromDateTime(UtcToJst(utcDateTime));
 		}
+
+		public static int CalcWeekNeeded(DateOnly startDate, int days)
+		{
+			if (days <= 0)
+			{
+				throw new ArgumentOutOfRangeException($"{nameof(days)}は1以上を指定して下さい");
+			}
+			return ((int)startDate.DayOfWeek + days + 6) / 7;
+		}
 	}
 }
