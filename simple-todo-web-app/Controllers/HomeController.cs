@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using simple_todo_web_app.Common.Constants;
+using simple_todo_web_app.Common.Utilities;
 using simple_todo_web_app.Data;
 using simple_todo_web_app.Models;
 using simple_todo_web_app.Models.Entities;
@@ -124,13 +126,28 @@ namespace simple_todo_web_app.Controllers
 			var level = await _context.TaskCompletionLogs
 				.CountAsync(l => l.UserId == userId);
 
+			// 過去の完了タスク履歴を取得
+			var taskHistoryList = await _context.TaskCompletionLogs
+				.Where(x => x.UserId == userId)
+				.GroupBy(x => x.CompletedAt)
+				.Select(group => new HomeViewModel.TaskHistoryEntry()
+				{
+					CompleteDate = group.Key,
+					CategoryList = group
+					 .Select(x => x.TaskId)
+					 .ToList()
+				})
+				.ToListAsync();
+
 			var model = new HomeViewModel
 			{
 				DisplayName = user.DisplayName,
 				Level = level,
 				ToDoTaskList = user.TaskList,
+				TaskHistoryList = taskHistoryList,
 				CharacterStats = user.CharacterStats,
 				UnallocatedPoints = user.UnallocatedPoints,
+				Today = DateTimeUtility.UtcToJstDate(DateTime.UtcNow)
 			};
 
 			return View("Home", model);

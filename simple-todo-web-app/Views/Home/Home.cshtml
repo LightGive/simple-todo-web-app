@@ -1,4 +1,6 @@
-﻿@model simple_todo_web_app.Models.HomeViewModel;
+﻿@using simple_todo_web_app.Common.Constants
+@using simple_todo_web_app.Common.Utilities
+@model simple_todo_web_app.Models.HomeViewModel;
 @{
     ViewData["Title"] = "ホーム画面";
 }
@@ -63,11 +65,47 @@
             </div>
             <!-- タスク完了履歴 -->
             <div class="col-12 col-md-6">
-                <div class="border border-2 rounded">
+                <div class="border border-2 rounded overflow-auto">
                     <h3>
                         タスク完了履歴
                     </h3>
+
                     <!-- タスク完了履歴可視化欄 -->
+                    @if (Model.IsValid && Model.Today.HasValue)
+                    {
+                        var startDate = Model.Today.Value.AddDays((6 - (int)Model.Today.Value.DayOfWeek));
+
+
+                        <div class="d-flex flex-row-reverse justify-content-center gap-2">
+                            @for (var i = 0; i < DateTimeUtility.CalcWeekNeeded(Model.Today.Value, TaskConstants.HistoryDays); i++)
+                            {
+                                <div class="d-flex flex-column-reverse gap-1">
+                                    @for (var j = 0; j < 7; j++)
+                                    {
+                                        var currentDate = startDate.AddDays(-((i * 7) + j));
+                                        var currentDayTaskHistory = Model.TaskHistoryList
+                                            .Where(x => x.CompleteDate == currentDate)
+                                            .FirstOrDefault();
+
+                                        @if (currentDayTaskHistory != null)
+                                        {
+                                            <div class="task-history-block-on"></div>
+                                        }
+                                        else
+                                        {
+                                            <div class="task-history-block-off"></div>
+                                        }
+                                    }
+                                </div>
+                            }
+                        </div>
+                    }
+                    else
+                    {
+                        <div>
+                            タスクの履歴情報を取得できませんでした
+                        </div>
+                    }
                 </div>
             </div>
         </div>
