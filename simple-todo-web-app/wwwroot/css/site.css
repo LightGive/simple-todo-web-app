@@ -39,3 +39,17 @@ body {
 .btn-task {
 	min-width: 100px;
 }
+
+.task-history-block-on {
+	border-radius: 0.125rem;
+	background-color: #0d6efd;
+	width: 15px;
+	height: 15px;
+}
+
+.task-history-block-off {
+	border-radius: 0.125rem;
+	background-color: #d3d3d3;
+	width: 15px;
+	height: 15px;
+}
