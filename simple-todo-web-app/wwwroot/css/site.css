@@ -37,7 +37,8 @@ body {
 }
 
 .btn-task {
-	min-width: 100px;
+	width: 100px;
+	flex-shrink: 0;
 }
 
 .task-history-block-on {
@@ -52,4 +53,55 @@ body {
 	background-color: #d3d3d3;
 	width: 15px;
 	height: 15px;
+}
+
+.block-group {
+	height: 320px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.block-inner {
+	box-shadow: var(--bs-box-shadow-sm);
+	border: 2px solid var(--bs-border-color);
+	border-radius: var(--bs-border-radius);
+	overflow: auto;
+	padding-left: 12px;
+	padding-right: 12px;
+	padding-top: 12px;
+	padding-bottom: 12px;
+	height: 95%;
+	width: 95%;
+}
+
+.block-title {
+	font-size: 1.75rem;
+	font-weight: bold;
+	margin-bottom: 24px;
+}
+
+.status-btn-add {
+	width: 40px;
+	flex-shrink: 0;
+	text-align: center;
+}
+
+.status-text {
+	width: 100px;
+	flex-shrink: 0;
+}
+
+.status-bar {
+	width: 3px;
+	height: 34px;
+	margin-right: 1px;
+}
+
+.status-bar-main {
+	background-color: blue;
+}
+
+.status-bar-gray {
+	background-color: lightblue;
 }
