@@ -20,19 +20,19 @@
     </nav>
 }
 
-<div class="text-center mt-5">
+<div class="text-center">
     <h1>
         ホーム画面
     </h1>
     <!-- 上段（横並び） -->
-    <div class="container mt-3">
-        <div class="row gx-5">
+    <div class="container">
+        <div class="row">
             <!-- 本日のタスク -->
-            <div class="col-12 col-md-6">
-                <div class="border border-2 rounded">
-                    <h3>
+            <div class="col-12 col-md-6 block-group">
+                <div class="block-inner">
+                    <div class="block-title">
                         本日のタスク
-                    </h3>
+                    </div>
 
                     <!-- 自身のタスク数分ループ -->
                     @foreach (var todoTask in Model.ToDoTaskList)
@@ -40,13 +40,15 @@
                         <!-- 論理削除済みのタスクは表示しない -->
                         @if (todoTask.IsDeleted) { continue; }
 
-                        <div class="d-flex justify-content-between align-items-center py-2">
+                        <div class="d-flex justify-content-between align-items-center py-1">
                             <!-- タスク名 -->
-                            <span class="mx-3">@todoTask.TaskName</span>
+                            <div class="text-start">
+                                @todoTask.TaskName
+                            </div>
                             <!-- タスク完了ボタン -->
                             @if (todoTask.IsCompletedToday)
                             {
-                                <button class="btn btn-primary btn-task mx-3" disabled>完了済み</button>
+                                <button class="btn btn-primary btn-task" disabled>完了済み</button>
                             }
                             else
                             {
@@ -54,7 +56,7 @@
                                       asp-action="CompleteTask"
                                       asp-route-taskid="@todoTask.TaskId">
                                     <button type="submit"
-                                            class="btn btn-primary btn-task mx-3">
+                                            class="btn btn-primary btn-task">
                                         完了
                                     </button>
                                 </form>
@@ -64,17 +66,17 @@
                 </div>
             </div>
             <!-- タスク完了履歴 -->
-            <div class="col-12 col-md-6">
-                <div class="border border-2 rounded overflow-auto">
-                    <h3>
+            <div class="col-12 col-md-6 block-group">
+                <div class="block-inner">
+
+                    <div class="block-title">
                         タスク完了履歴
-                    </h3>
+                    </div>
 
                     <!-- タスク完了履歴可視化欄 -->
                     @if (Model.IsValid && Model.Today.HasValue)
                     {
                         var startDate = Model.Today.Value.AddDays((6 - (int)Model.Today.Value.DayOfWeek));
-
 
                         <div class="d-flex flex-row-reverse justify-content-center gap-2">
                             @for (var i = 0; i < DateTimeUtility.CalcWeekNeeded(Model.Today.Value, TaskConstants.HistoryDays); i++)
@@ -110,16 +112,15 @@
             </div>
         </div>
     </div>
-
     <!-- 下段（横並び） -->
-    <div class="container mt-3">
-        <div class="row gx-5">
+    <div class="container">
+        <div class="row">
             <!-- キャラクター情報 -->
-            <div class="col-12 col-md-6">
-                <div class="border border-2 rounded">
-                    <h3>
+            <div class="col-12 col-md-6 block-group">
+                <div class="block-inner">
+                    <div class="block-title">
                         キャラクター情報
-                    </h3>
+                    </div>
                     <div class="d-flex align-items-center">
                         <!-- 左 -->
                         <div class="w-50">
@@ -127,7 +128,7 @@
                             <p>レベル：@Model.Level</p>
                             <img src="~/images/profile-yuusya.png"
                                  alt="Character Image"
-                                 style="width: 256px; height: 256px;"
+                                 style="width: 128px; height: 128px;"
                                  class="img-fluid" />
                         </div>
                         <!-- 右 -->
@@ -137,13 +138,12 @@
                     </div>
                 </div>
             </div>
-
             <!-- ステータス情報 -->
-            <div class="col-12 col-md-6">
-                <div class="border border-2 rounded px-2 py-2">
-                    <h3>
-                        ステータス情報
-                    </h3>
+            <div class="col-12 col-md-6 block-group">
+                <div class="block-inner">
+                    <div class="block-title">
+                        ステータス振り分け
+                    </div>
 
                     <!-- パラメーター表示 -->
                     @if (Model.IsValid)
@@ -165,25 +165,23 @@
                         @foreach (var stat in stats)
                         {
                             <!-- パラメーター要素 -->
-                            <div class="d-flex py-1">
+                            <div class="d-flex justify-content-between align-items-center py-1">
 
-                                <!-- HP:数値 -->
-                                <div class="text-end" style="flex:2">
-                                    <span>@stat.name：@stat.param</span>
-                                </div>
+                                <div class="d-flex justify-content-start align-items-start">
+                                    <!-- HP:数値 -->
+                                    <div class="status-text">@stat.name：@stat.param</div>
 
-                                <!-- ステータスバー -->
-                                <div style="flex:5" class="px-2">
-                                    <div style="height:1.5rem;">
-                                        <div class="bg-primary h-100 rounded" style="width: @(Math.Clamp((float)stat.param / 100f, 0f, 1f) * 100f)%">
-                                        </div>
+                                    <div class="d-flex justify-content-start">
+
+                                        @for (var i = 0; i < CharacterConstants.MaxDisplayStatValue; i++)
+                                        {
+                                            <div class="status-bar @(i < stat.param ? "status-bar-main" : "status-bar-gray")"></div>
+                                        }
                                     </div>
                                 </div>
 
                                 <!-- ステ振りボタン-->
-                                <div class="text-center" style="flex:3">
-                                    <button type="button" class="btn btn-primary w-100" data-stat="@stat.name">＋</button>
-                                </div>
+                                <button type="button" class="btn-primary status-btn-add" data-stat="@stat.name">＋</button>
                             </div>
                         }
                         
