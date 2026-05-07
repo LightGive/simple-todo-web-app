@@ -10,18 +10,15 @@ namespace simple_todo_web_app.Controllers
 	{
 		readonly UserManager<ApplicationUser> _userManager;
 		readonly SignInManager<ApplicationUser> _signInManager;
-		readonly IEmailSender _emailSender;
 		readonly EmailService _emailService;
 
 		public AccountController(
 			UserManager<ApplicationUser> userManager,
 			SignInManager<ApplicationUser> signInManager,
-			IEmailSender emailSender,
 			EmailService emailServ)
 		{
 			_userManager = userManager;
 			_signInManager = signInManager;
-			_emailSender = emailSender;
 			_emailService = emailServ;
 		}
 
