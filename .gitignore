@@ -56,6 +56,9 @@ appsettings.json
 publish/
 *.pubxml
 *.publishproj
+serviceDependencies.local.json
+serviceDependencies.* - *.json
+ServiceDependencies/
 
 # =========================
 # EntityFramework
