@@ -1,3 +1,4 @@
 <Solution>
+  <Project Path="simple-todo-web-app.UnitTests/simple-todo-web-app.UnitTests.csproj" />
   <Project Path="simple-todo-web-app/simple-todo-web-app.csproj" />
 </Solution>
